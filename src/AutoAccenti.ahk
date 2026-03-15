@@ -12,6 +12,7 @@ if FileExist("assets\AutoAccenti.ico")
 ; 2026-02-21 se si scrive -che'- lo modificava in -chu- anzichè in -che-
 ; 2026-02-21 Aumentato il tempo dei tooltip da 2 a 4 secondi
 ; 2026-03-13 Aggiunto il controllo per i monosillabi e gestione maiuscole
+; 2026-03-15 Sistemato tal e qual con apostrofo e backtick
 
 ; Costanti globali
 global NotaMonosillabi :=
