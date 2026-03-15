@@ -49,7 +49,8 @@ Hotkey("<^>!" SpecialApostrophe, (*) => SendSpecialChar(SpecialApostrophe))
 Hotkey("!" SpecialApostrophe, (*) => SendSpecialChar(SpecialApostrophe))
 
 ProcessKey(ih, char) {
-    if (char = SpecialApostrophe or char = " " or char = "ù" or char = "à" or char = "è" or char = "é" or char = "ì" or
+    if (char = SpecialApostrophe or char = "'" or char = " " or char = "ù" or char = "à" or char = "è" or char = "é" or
+        char = "ì" or
         char = "ò") {
         KeyCheck(char)
     } else {
@@ -73,7 +74,7 @@ KeyCheck(key) {
     k4 := StrLower(H[4])
 
     ; Case check (v1: if H1 is upper)
-    ; Se H1 è un apostrofo, controlliamo il case del carattere precedente (H2)
+    ; Se H1 è un SpecialApostrophe, controlliamo il case del carattere precedente (H2)
     IsLower1 := (H[1] == SpecialApostrophe ? (H[2] == k2 ? "1" : "0") : (H[1] == k1 ? "1" : "0"))
 
     ; Alpha checks (v1: if H3 is alpha)
@@ -178,20 +179,30 @@ KeyCheck(key) {
     else if (Alpha5 = "F" and k4 = "s" and k3 = "t" and k2 = "a" and k1 = SpecialApostrophe and key = SpecialApostrophe
     )
         NewKey := "à"
-
     ; "qual" senza apostrofo
-    else if (Alpha5 = "F" and k4 = "q" and k3 = "u" and k2 = "a" and k1 = "l" and key = SpecialApostrophe) {
+    else if (Alpha5 = "F" and k4 = "q" and k3 = "u" and k2 = "a" and k1 = "l" and key = "'") {
+        NewKey := "l "
+        ToolTip('"qual" senza apostrofo')
+        SetTimer () => ToolTip(), -4000
+    }
+    ; "qual" senza backtick
+    else if (Alpha5 = "F" and k4 = "q" and k3 = "u" and k2 = "a" and k1 = "l" and key = "``") {
         NewKey := "l "
         ToolTip('"qual" senza apostrofo')
         SetTimer () => ToolTip(), -4000
     }
     ; "tal" senza apostrofo
-    else if (Alpha4 = "F" and k3 = "t" and k2 = "a" and k1 = "l" and key = SpecialApostrophe) {
+    else if (Alpha4 = "F" and k3 = "t" and k2 = "a" and k1 = "l" and key = "'") {
         NewKey := "l "
         ToolTip('"tal" senza apostrofo')
         SetTimer () => ToolTip(), -4000
     }
-
+    ; "tal" senza backtick
+    else if (Alpha4 = "F" and k3 = "t" and k2 = "a" and k1 = "l" and key = "``") {
+        NewKey := "l "
+        ToolTip('"tal" senza apostrofo')
+        SetTimer () => ToolTip(), -4000
+    }
     ; "fa" senza accento ma con apostrofo nell'imperativo fa'=fai
     else if (Alpha3 = "F" and k2 = "f" and k1 = "a" and key = SpecialApostrophe) {
         NewKey := "a'"
