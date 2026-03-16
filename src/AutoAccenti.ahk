@@ -35,7 +35,7 @@ for arg in A_Args {
 global H := [" ", " ", " ", " ", " ", " ", " ", " ", " "]
 
 ; Diagnostica avvio
-ToolTip("AutoAccenti v2.2 Avviato!")
+ToolTip("AutoAccenti v2 2026-03-16 Avviato!")
 SetTimer () => ToolTip(), -4000
 
 ; Inizializzazione InputHook
