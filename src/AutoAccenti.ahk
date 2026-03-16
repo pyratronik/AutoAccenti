@@ -13,6 +13,7 @@ if FileExist("assets\AutoAccenti.ico")
 ; 2026-02-21 Aumentato il tempo dei tooltip da 2 a 4 secondi
 ; 2026-03-13 Aggiunto il controllo per i monosillabi e gestione maiuscole
 ; 2026-03-15 Sistemato tal e qual con apostrofo e backtick
+; 2026-03-16 Regole su (c)he, , re, (an)dò, (pe)rò e (p)uò
 
 ; Costanti globali
 global NotaMonosillabi :=
@@ -34,7 +35,7 @@ for arg in A_Args {
 global H := [" ", " ", " ", " ", " ", " ", " ", " ", " "]
 
 ; Diagnostica avvio
-ToolTip("Accenti v2.1 Avviato!")
+ToolTip("AutoAccenti v2.2 Avviato!")
 SetTimer () => ToolTip(), -4000
 
 ; Inizializzazione InputHook
@@ -68,6 +69,25 @@ ShiftHistory(key) {
 KeyCheck(key) {
     global NotaMonosillabi, NotaImperativi, H
 
+    ; Se la history è vuota (es. dopo spostamento cursore) e si preme l'apostrofo,
+    ; cerca di leggere il carattere precedente dal testo in modo selettivo.
+    if (H[1] == " " and key == SpecialApostrophe) {
+        savedClip := ClipboardAll()
+        A_Clipboard := ""
+        SendInput("+{Left 2}^c")
+        if ClipWait(0.1) {
+            text := A_Clipboard
+            SendInput("{Right}")
+            if (StrLen(text) >= 1) {
+                prevChar := SubStr(text, 1, 1)
+                if (IsAlpha(prevChar)) {
+                    H[1] := prevChar
+                }
+            }
+        }
+        A_Clipboard := savedClip
+    }
+
     ; Versioni lowercase per i confronti
     k1 := StrLower(H[1])
     k2 := StrLower(H[2])
@@ -75,8 +95,8 @@ KeyCheck(key) {
     k4 := StrLower(H[4])
 
     ; Case check (v1: if H1 is upper)
-    ; Se H1 è un SpecialApostrophe, controlliamo il case del carattere precedente (H2)
-    IsLower1 := (H[1] == SpecialApostrophe ? (H[2] == k2 ? "1" : "0") : (H[1] == k1 ? "1" : "0"))
+    ; Se H1 è un SpecialApostrophe o un apostrofo, controlliamo il case del carattere precedente (H2)
+    IsLower1 := ((H[1] == SpecialApostrophe or H[1] == "'") ? (H[2] == k2 ? "1" : "0") : (H[1] == k1 ? "1" : "0"))
 
     ; Alpha checks (v1: if H3 is alpha)
     Alpha2 := (IsAlpha(H[2]) ? "T" : "F")
@@ -89,18 +109,18 @@ KeyCheck(key) {
     ; po'=poco
     if (Alpha3 = "F" and k2 = "p" and k1 = "o" and key = SpecialApostrophe)
         NewKey := "o'"
-    else if (Alpha4 = "F" and k3 = "p" and k2 = "o" and k1 = SpecialApostrophe and key = " ")
+    else if (Alpha4 = "F" and k3 = "p" and k2 = "o" and k1 = "'" and key = " ")
         NewKey := " "
-    else if (Alpha4 = "F" and k3 = "p" and k2 = "o" and k1 = SpecialApostrophe and key = SpecialApostrophe)
-        NewKey := "ò"
+    else if (Alpha4 = "F" and k3 = "p" and k2 = "o" and k1 = "'" and key = SpecialApostrophe)
+        NewKey := "o"
 
     ; mo'=modo
     else if (Alpha3 = "F" and k2 = "m" and k1 = "o" and key = SpecialApostrophe)
         NewKey := "o'"
-    else if (Alpha4 = "F" and k3 = "m" and k2 = "o" and k1 = SpecialApostrophe and key = " ")
+    else if (Alpha4 = "F" and k3 = "m" and k2 = "o" and k1 = "'" and key = " ")
         NewKey := " "
-    else if (Alpha4 = "F" and k3 = "m" and k2 = "o" and k1 = SpecialApostrophe and key = SpecialApostrophe)
-        NewKey := "ò"
+    else if (Alpha4 = "F" and k3 = "m" and k2 = "o" and k1 = "'" and key = SpecialApostrophe)
+        NewKey := "o"
     else if (Alpha4 = "F" and k3 = "g" and k2 = "i" and k1 = "a" and key = " ") {
         NewKey := "à "
         ToolTip('"già" si scrive sempre con l`accento')
@@ -175,11 +195,10 @@ KeyCheck(key) {
         ToolTip('"sta" ' . NotaImperativi)
         SetTimer () => ToolTip(), -4000
     }
-    else if (Alpha5 = "F" and k4 = "s" and k3 = "t" and k2 = "a" and k1 = SpecialApostrophe and key = " ")
+    else if (Alpha5 = "F" and k4 = "s" and k3 = "t" and k2 = "a" and k1 = "'" and key = " ")
         NewKey := " "
-    else if (Alpha5 = "F" and k4 = "s" and k3 = "t" and k2 = "a" and k1 = SpecialApostrophe and key = SpecialApostrophe
-    )
-        NewKey := "à"
+    else if (Alpha5 = "F" and k4 = "s" and k3 = "t" and k2 = "a" and k1 = "'" and key = SpecialApostrophe)
+        NewKey := "a"
     ; "qual" senza apostrofo
     else if (Alpha5 = "F" and k4 = "q" and k3 = "u" and k2 = "a" and k1 = "l" and key = "'") {
         NewKey := "l "
@@ -210,6 +229,10 @@ KeyCheck(key) {
         ToolTip('"fa" ' . NotaImperativi)
         SetTimer () => ToolTip(), -4000
     }
+    else if (Alpha4 = "F" and k3 = "f" and k2 = "a" and k1 = "'" and key = " ")
+        NewKey := " "
+    else if (Alpha4 = "F" and k3 = "f" and k2 = "a" and k1 = "'" and key = SpecialApostrophe)
+        NewKey := "a"
     else if (Alpha2 = "F" and k1 = "f" and key = "à") {
         NewKey := "fa"
         ToolTip('"fa" ' . NotaMonosillabi)
@@ -221,6 +244,10 @@ KeyCheck(key) {
         ToolTip('"va" ' . NotaImperativi)
         SetTimer () => ToolTip(), -4000
     }
+    else if (Alpha4 = "F" and k3 = "v" and k2 = "a" and k1 = "'" and key = " ")
+        NewKey := " "
+    else if (Alpha4 = "F" and k3 = "v" and k2 = "a" and k1 = "'" and key = SpecialApostrophe)
+        NewKey := "a"
     ; "su" senza accento
     else if (Alpha3 = "F" and k2 = "s" and k1 = "u" and key = SpecialApostrophe) {
         NewKey := "u"
@@ -292,15 +319,14 @@ KeyCheck(key) {
     else if (k1 = "a" and key = SpecialApostrophe)
         NewKey := "à"
     else if (k1 = "à" and key = SpecialApostrophe)
-        NewKey := "a'"
-    else if (k2 = "a" and k1 = SpecialApostrophe and key = SpecialApostrophe)
         NewKey := "a"
 
-    ;-- Accenti acuti sulla é
+    ;-- Accenti acuti sulla ...hé
     else if (k2 = "h" and k1 = "e" and key = SpecialApostrophe)
         NewKey := "é"
     else if (k2 = "h" and k1 = "é" and key = SpecialApostrophe)
         NewKey := "e"
+    ;-- Accenti acuti sulla r é
     else if (k2 = "r" and k1 = "e" and key = SpecialApostrophe)
         NewKey := "é"
     else if (k2 = "r" and k1 = "é" and key = SpecialApostrophe)
@@ -323,17 +349,31 @@ KeyCheck(key) {
     else if (k1 = "è" and key = SpecialApostrophe)
         NewKey := "é"
     else if (k1 = "é" and key = SpecialApostrophe)
-        NewKey := "e'"
-    else if (k2 = "e" and k1 = SpecialApostrophe and key = SpecialApostrophe)
         NewKey := "e"
 
     ; Cicla gli accenti sulla i (solo grave ì)
     else if (k1 = "i" and key = SpecialApostrophe)
         NewKey := "ì"
     else if (k1 = "ì" and key = SpecialApostrophe)
-        NewKey := "i'"
-    else if (k2 = "i" and k1 = SpecialApostrophe and key = SpecialApostrophe)
         NewKey := "i"
+
+    ; Cicla gli accenti sulla do (ad es. andò)
+    else if (k2 = "d" and k1 = "o" and key = SpecialApostrophe)
+        NewKey := "ò"
+    else if (k2 = "d" and k1 = "ò" and key = SpecialApostrophe)
+        NewKey := "o"
+
+    ; Cicla gli accenti sulla ro (ad es. però)
+    else if (k2 = "r" and k1 = "o" and key = SpecialApostrophe)
+        NewKey := "ò"
+    else if (k2 = "r" and k1 = "ò" and key = SpecialApostrophe)
+        NewKey := "o"
+
+    ; Cicla gli accenti sulla uo (ad es. può)
+    else if (k2 = "u" and k1 = "o" and key = SpecialApostrophe)
+        NewKey := "ò"
+    else if (k2 = "u" and k1 = "ò" and key = SpecialApostrophe)
+        NewKey := "o"
 
     ; Cicla gli accenti sulla o
     else if (k1 = "o" and key = SpecialApostrophe)
@@ -341,23 +381,19 @@ KeyCheck(key) {
     else if (k1 = "ò" and key = SpecialApostrophe)
         NewKey := "ó"
     else if (k1 = "ó" and key = SpecialApostrophe)
-        NewKey := "o'"
-    else if (k2 = "o" and k1 = SpecialApostrophe and key = SpecialApostrophe)
         NewKey := "o"
 
     ; Cicla gli accenti sulla u (solo grave ù)
     else if (k1 = "u" and key = SpecialApostrophe)
         NewKey := "ù"
     else if (k1 = "ù" and key = SpecialApostrophe)
-        NewKey := "u'"
-    else if (k2 = "u" and k1 = SpecialApostrophe and key = SpecialApostrophe)
         NewKey := "u"
 
     if (IsLower1 = "0")
         NewKey := StrUpper(NewKey)
 
     if (NewKey != " ") {
-        if (H[1] = SpecialApostrophe) {
+        if (H[1] = SpecialApostrophe or H[1] = "'") {
             SendInput("{Backspace}")
             H.RemoveAt(1)
             H.Push(" ")

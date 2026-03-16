@@ -1,8 +1,7 @@
-# AutoAccenti v2.x
+# AutoAccenti v2
+**AutoAccenti** è un tool studiato per semplificare la scrittura in lingua italiana con tastiere dal layout non nativo e accelerare il flusso di digitazione, correggendo "al volo" e "intelligentemente" gli accenti!
 
-🚀 **AutoAccenti** è un tool studiato per semplificare la scrittura in lingua italiana con tastiere dal layout non nativo e accelerare il flusso di digitazione, correggendo "al volo" e "intelligentemente" gli accenti!
-
-La versione 2.x è stata riscritta e aggiornata per AutoHotkey v2 e rifinita **grazie al supporto di Gemini 3 flash/pro**.
+La versione 2 è stata riscritta e aggiornata per AutoHotkey v2 e rifinita **grazie al supporto di Gemini 3 flash/pro**.
 
 ## Cosa fa AutoAccenti?
 Lo script monitora di nascosto ciò che digiti e converte magicamente l'apostrofo nell'accento corretto, rispettando tutte le principali regole grammaticali italiane:
@@ -28,7 +27,7 @@ AutoAccenti.exe '
 ```
 
 ### 2. Parametro opzionale per la Tastiera Apple
-Se utilizzi una **tastiera layout Apple MacOS**, puoi abilitare il parametro `apple`. Questa modalità scambia immediatamente i tasti Command e Option della mela mettendoli al loro orientamento analogo per Windows (scambia cioè le funzioni di Alt e Win).
+Se utilizzi una **tastiera layout Apple MacOS**, puoi abilitare il parametro `-apple`. Questa modalità scambia immediatamente i tasti Command e Option della mela mettendoli al loro orientamento analogo per Windows (scambia cioè le funzioni di Alt e Win).
 **Esempio:**
 ```bat
 AutoAccenti.exe apple
