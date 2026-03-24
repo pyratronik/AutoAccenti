@@ -34,8 +34,15 @@ AutoAccenti.exe apple
 ```
 (Puoi usare indifferentemente `apple`, `-apple` o `/apple`).
 
+### 3. Parametro opzionale per la Tastiera Tedesca
+Se utilizzi una **tastiera layout Tedesca**, puoi abilitare il parametro `-de`. Questa modalità abilita i caratteri tedeschi.
+**Esempio:**
+```bat
+AutoAccenti.exe de
+```
+(Puoi usare indifferentemente `de`, `-de` o `/de`).
 
-*(Naturalmente i parametri possono essere utilizzati in contemporanea: `AutoAccenti.exe apple '`)*
+*(Naturalmente i parametri possono essere utilizzati in contemporanea: `AutoAccenti.exe apple ' de`)*
 
 ---
 

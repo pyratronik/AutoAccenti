@@ -15,7 +15,7 @@ if FileExist("AutoAccenti.ico")
 ; 2026-03-15 Sistemato tal e qual con apostrofo e backtick
 ; 2026-03-16 Regole su (c)he, , re, (an)dò, (pe)rò e (p)uò
 ; 2026-03-24 Try to fix the issue with the hook not working when the script is paused
-; 2026-03-24 Aggiunto il parametro -de per abilitare i caratteri della lingua tedescha
+; 2026-03-24 Aggiunto il parametro -de per abilitare i caratteri della lingua tedesca
 
 ; Costanti globali
 global NotaMonosillabi :=
