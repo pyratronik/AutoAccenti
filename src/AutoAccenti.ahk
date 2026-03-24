@@ -15,6 +15,7 @@ if FileExist("AutoAccenti.ico")
 ; 2026-03-15 Sistemato tal e qual con apostrofo e backtick
 ; 2026-03-16 Regole su (c)he, , re, (an)dò, (pe)rò e (p)uò
 ; 2026-03-24 Try to fix the issue with the hook not working when the script is paused
+; 2026-03-24 Aggiunto il parametro -de per abilitare i caratteri della lingua tedescha
 
 ; Costanti globali
 global NotaMonosillabi :=
@@ -24,10 +25,13 @@ global NotaImperativi :=
 ; Carattere inserito attivando la shortcut Alt + ' (da linea di comando o default)
 global SpecialApostrophe := "``"
 global AppleKeyboard := false
+global GermanKeyboard := false
 
 for arg in A_Args {
     if (StrLower(arg) = "apple" or StrLower(arg) = "-apple" or StrLower(arg) = "/apple")
         AppleKeyboard := true
+    else if (StrLower(arg) = "de" or StrLower(arg) = "-de" or StrLower(arg) = "/de")
+        GermanKeyboard := true
     else if (StrLen(arg) = 1)
         SpecialApostrophe := arg
 }
@@ -443,6 +447,7 @@ BackShiftHistory() {
 ::n_o::n°
 
 ; Tasti Scelta Rapida per caratteri speciali (Right Alt)
+#HotIf GermanKeyboard
 >!a:: SendSpecialChar("ä")
 >!o:: SendSpecialChar("ö")
 >!u:: SendSpecialChar("ü")
@@ -450,6 +455,7 @@ BackShiftHistory() {
 +>!a:: SendSpecialChar("Ä")
 +>!o:: SendSpecialChar("Ö")
 +>!u:: SendSpecialChar("Ü")
+#HotIf
 
 SendSpecialChar(char) {
     SendText(char)
