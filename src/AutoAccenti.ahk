@@ -4,8 +4,8 @@
 A_MaxHotkeysPerInterval := 800 ; Evita l'errore se si ricevono molti tasti (es. da potenziometri MIDI)
 
 ; --- Configurazione Icona Tray ---
-if FileExist("assets\AutoAccenti.ico")
-    TraySetIcon("assets\AutoAccenti.ico")
+if FileExist("AutoAccenti.ico")
+    TraySetIcon("AutoAccenti.ico")
 ; ---------------------------------
 
 ; 2026-02-21 Nuova versione per AutoHotKey v2
@@ -14,6 +14,7 @@ if FileExist("assets\AutoAccenti.ico")
 ; 2026-03-13 Aggiunto il controllo per i monosillabi e gestione maiuscole
 ; 2026-03-15 Sistemato tal e qual con apostrofo e backtick
 ; 2026-03-16 Regole su (c)he, , re, (an)dò, (pe)rò e (p)uò
+; 2026-03-24 Try to fix the issue with the hook not working when the script is paused
 
 ; Costanti globali
 global NotaMonosillabi :=
@@ -35,13 +36,13 @@ for arg in A_Args {
 global H := [" ", " ", " ", " ", " ", " ", " ", " ", " "]
 
 ; Diagnostica avvio
-ToolTip("AutoAccenti v2 2026-03-16 Avviato!")
+ToolTip("AutoAccenti v2 2026-03-24 Avviato!")
 SetTimer () => ToolTip(), -4000
 
 ; Inizializzazione InputHook
 ; V = Visible (non blocca l'input dell'utente)
 ; I = Ignore script generated input (evita ricorsione)
-ih := InputHook("V I")
+ih := InputHook("V I L0")
 ih.OnChar := ProcessKey
 ih.Start()
 
