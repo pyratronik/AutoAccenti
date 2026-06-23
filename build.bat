@@ -31,3 +31,4 @@ echo.
 echo Compilazione completata con successo! I file si trovano nella cartella "build".
 echo.
 pause
+

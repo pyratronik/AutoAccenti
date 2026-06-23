@@ -74,6 +74,30 @@ ShiftHistory(key) {
 KeyCheck(key) {
     global NotaMonosillabi, NotaImperativi, H
 
+    ; Se si sta scrivendo uno shortcut racchiuso tra backtick (es: `date`), salta le regole di accentazione
+    IsShortcut := false
+    if (key == SpecialApostrophe) {
+        loop H.Length {
+            if (A_Index == 1)
+                continue
+            char := H[A_Index]
+            if (char == SpecialApostrophe) {
+                if (A_Index > 2) {
+                    IsShortcut := true
+                }
+                break
+            }
+            if (char == " ") {
+                break
+            }
+        }
+    }
+
+    if (IsShortcut) {
+        ShiftHistory(key)
+        return
+    }
+
     ; Se la history è vuota (es. dopo spostamento cursore) e si preme l'apostrofo,
     ; cerca di leggere il carattere precedente dal testo in modo selettivo.
     if (H[1] == " " and key == SpecialApostrophe) {
@@ -440,22 +464,7 @@ BackShiftHistory() {
     H.Push(" ")
 }
 
-; Abbreviazioni (Hotstrings)
-::(c)::©
-::(r)::®
-::+/-::±
-::n_o::n°
-
-; Tasti Scelta Rapida per caratteri speciali (Right Alt)
-#HotIf GermanKeyboard
->!a:: SendSpecialChar("ä")
->!o:: SendSpecialChar("ö")
->!u:: SendSpecialChar("ü")
->!s:: SendSpecialChar("ß")
-+>!a:: SendSpecialChar("Ä")
-+>!o:: SendSpecialChar("Ö")
-+>!u:: SendSpecialChar("Ü")
-#HotIf
+#Include AutoAccenti_shortcuts.ahk
 
 SendSpecialChar(char) {
     SendText(char)
