@@ -30,5 +30,5 @@ echo - Compilazione versione a 32-bit (x86)
 echo.
 echo Compilazione completata con successo! I file si trovano nella cartella "build".
 echo.
-pause
+
 

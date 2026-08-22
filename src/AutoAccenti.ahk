@@ -17,6 +17,7 @@ if FileExist("AutoAccenti.ico")
 ; 2026-03-24 Try to fix the issue with the hook not working when the script is paused
 ; 2026-03-24 Added the -de parameter to enable German characters
 ; 2026-08-22 SendEvent() instead of SendInput() and send Asc code to avoid issues with some applications
+; 2026-08-22 SendSpecialChar() function to handle special characters and remote desktop scenarios
 
 ; Costanti globali
 global NotaMonosillabi :=
@@ -26,7 +27,7 @@ global NotaImperativi :=
 ; Carattere inserito attivando la shortcut Alt + ' (da linea di comando o default)
 global SpecialApostrophe := "``"
 global AppleKeyboard := false
-global GermanKeyboard := false
+global GermanKeyboard := true
 
 for arg in A_Args {
     if (StrLower(arg) = "apple" or StrLower(arg) = "-apple" or StrLower(arg) = "/apple")
@@ -53,8 +54,8 @@ ih.Start()
 
 ; Creazione dinamica delle hotkey per l'inserimento dell'apostrofo/carattere speciale
 ; (*) => scarta i parametri extra passati dalla hotkey
-Hotkey("<^>!" SpecialApostrophe, (*) => SendSpecialChar(SpecialApostrophe))
-Hotkey("!" SpecialApostrophe, (*) => SendSpecialChar(SpecialApostrophe))
+Hotkey("<^>!" SpecialApostrophe, (*) => SendSpecialChar(SpecialApostrophe, ""))
+Hotkey("!" SpecialApostrophe, (*) => SendSpecialChar(SpecialApostrophe, ""))
 
 ProcessKey(ih, char) {
     if (char = SpecialApostrophe or char = "'" or char = " " or char = "ù" or char = "à" or char = "è" or char = "é" or
@@ -487,21 +488,37 @@ BackShiftHistory() {
 ::+/-::±
 ::n_o::n°
 
-; Tasti Scelta Rapida per caratteri speciali (Right Alt)
+
+; Tasti Scelta Rapida per caratteri speciali (Right Alt / AltGr)
 #HotIf GermanKeyboard
->!a:: SendSpecialChar("ä")
->!o:: SendSpecialChar("ö")
->!u:: SendSpecialChar("ü")
->!s:: SendSpecialChar("ß")
-+>!a:: SendSpecialChar("Ä")
-+>!o:: SendSpecialChar("Ö")
-+>!u:: SendSpecialChar("Ü")
+>!a::SendSpecialChar("ä", "{Asc 132}")
+>!o::SendSpecialChar("ö", "{Asc 148}")
+>!u::SendSpecialChar("ü", "{Asc 129}")
+>!s::SendSpecialChar("ß", "{Asc 225}")
++>!a::SendSpecialChar("Ä", "{Asc 142}")
++>!o::SendSpecialChar("Ö", "{Asc 153}")
++>!u::SendSpecialChar("Ü", "{Asc 154}")
 #HotIf
 
-SendSpecialChar(char) {
-    SendText(char)
+
+SendSpecialChar(char, code) {
+    ; Recupera il titolo della finestra attualmente attiva
+    ActiveTitle := WinGetTitle("A")
+    
+    ; Controlla se il titolo inizia con "Chrome Remote Desktop"
+    if SubStr(ActiveTitle, 1, 21) = "Chrome Remote Desktop" {
+        ; --- COMPORTAMENTO DA REMOTO ---
+        ; Rilascia logicamente il tasto Alt prima dell'invio ASCII per evitare conflitti
+        Send "{AltUp}"
+        SendEvent(code)
+    } else {
+        SendEvent(char)
+    }
+
     ShiftHistory(char)
 }
+
+
 
 ; Inversione tasti Win e Alt per tastiere Apple (parametro 'apple')
 #HotIf AppleKeyboard
