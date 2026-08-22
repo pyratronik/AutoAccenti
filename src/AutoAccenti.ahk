@@ -428,7 +428,6 @@ KeyCheck(key) {
             H.RemoveAt(1)
             H.Push(" ")
         }
-
         H[1] := SubStr(NewKey, 1, 1)
 
         if (StrLen(NewKey) > 1)
@@ -482,7 +481,22 @@ BackShiftHistory() {
     H.Push(" ")
 }
 
-#Include AutoAccenti_shortcuts.ahk
+; Abbreviazioni (Hotstrings)
+::(c)::©
+::(r)::®
+::+/-::±
+::n_o::n°
+
+; Tasti Scelta Rapida per caratteri speciali (Right Alt)
+#HotIf GermanKeyboard
+>!a:: SendSpecialChar("ä")
+>!o:: SendSpecialChar("ö")
+>!u:: SendSpecialChar("ü")
+>!s:: SendSpecialChar("ß")
++>!a:: SendSpecialChar("Ä")
++>!o:: SendSpecialChar("Ö")
++>!u:: SendSpecialChar("Ü")
+#HotIf
 
 SendSpecialChar(char) {
     SendText(char)
