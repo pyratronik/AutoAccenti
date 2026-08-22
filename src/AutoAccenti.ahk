@@ -79,10 +79,10 @@ KeyCheck(key) {
     if (H[1] == " " and key == SpecialApostrophe) {
         savedClip := ClipboardAll()
         A_Clipboard := ""
-        SendInput("+{Left 2}^c")
+        SendEvent("+{Left 2}^c")
         if ClipWait(0.1) {
             text := A_Clipboard
-            SendInput("{Right}")
+            SendEvent("{Right}")
             if (StrLen(text) >= 1) {
                 prevChar := SubStr(text, 1, 1)
                 if (IsAlpha(prevChar)) {
@@ -399,16 +399,33 @@ KeyCheck(key) {
 
     if (NewKey != " ") {
         if (H[1] = SpecialApostrophe or H[1] = "'") {
-            SendInput("{Backspace}")
+            SendEvent("{Backspace}")
             H.RemoveAt(1)
             H.Push(" ")
         }
+
         H[1] := SubStr(NewKey, 1, 1)
 
         if (StrLen(NewKey) > 1)
             ShiftHistory(SubStr(NewKey, 2, 1))
 
-        SendInput("{Backspace 2}" . NewKey)
+        if (NewKey = "à")
+            NewKey := "{Asc 133}"
+        else if (NewKey = "è")
+            NewKey := "{Asc 138}"
+        else if (NewKey = "é")
+            NewKey := "{Asc 130}"
+        else if (NewKey = "ì")
+            NewKey := "{Asc 141}"
+        else if (NewKey = "ò")
+            NewKey := "{Asc 149}"
+        else if (NewKey = "ó")
+            NewKey := "{Asc 162}"
+        else if (NewKey = "ù")
+            NewKey := "{Asc 151}"
+
+        SendEvent("{Backspace 2}" . NewKey
+    )
     } else {
         ShiftHistory(key)
     }
