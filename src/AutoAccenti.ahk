@@ -27,7 +27,7 @@ global NotaImperativi :=
 ; Carattere inserito attivando la shortcut Alt + ' (da linea di comando o default)
 global SpecialApostrophe := "``"
 global AppleKeyboard := false
-global GermanKeyboard := true
+global GermanKeyboard := false
 
 for arg in A_Args {
     if (StrLower(arg) = "apple" or StrLower(arg) = "-apple" or StrLower(arg) = "/apple")
