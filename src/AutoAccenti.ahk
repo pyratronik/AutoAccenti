@@ -15,7 +15,10 @@ if FileExist("AutoAccenti.ico")
 ; 2026-03-15 Sistemato tal e qual con apostrofo e backtick
 ; 2026-03-16 Regole su (c)he, , re, (an)dò, (pe)rò e (p)uò
 ; 2026-03-24 Try to fix the issue with the hook not working when the script is paused
-; 2026-03-24 Aggiunto il parametro -de per abilitare i caratteri della lingua tedesca
+; 2026-03-24 Added the -de parameter to enable German characters
+; 2026-08-22 SendEvent() instead of SendInput() and send Asc code to avoid issues with some applications
+; 2026-08-22 SendSpecialChar() function to handle special characters and remote desktop scenarios
+; 2026-08-24 Fix Remote Desktop Connection
 
 ; Costanti globali
 global NotaMonosillabi :=
@@ -40,7 +43,7 @@ for arg in A_Args {
 global H := [" ", " ", " ", " ", " ", " ", " ", " ", " "]
 
 ; Diagnostica avvio
-ToolTip("AutoAccenti v2 2026-03-24 Avviato!")
+ToolTip("AutoAccenti v2 2026-08-23 Avviato!")
 SetTimer () => ToolTip(), -4000
 
 ; Inizializzazione InputHook
@@ -52,8 +55,8 @@ ih.Start()
 
 ; Creazione dinamica delle hotkey per l'inserimento dell'apostrofo/carattere speciale
 ; (*) => scarta i parametri extra passati dalla hotkey
-Hotkey("<^>!" SpecialApostrophe, (*) => SendSpecialChar(SpecialApostrophe))
-Hotkey("!" SpecialApostrophe, (*) => SendSpecialChar(SpecialApostrophe))
+Hotkey("<^>!" SpecialApostrophe, (*) => SendSpecialChar(SpecialApostrophe, ""))
+Hotkey("!" SpecialApostrophe, (*) => SendSpecialChar(SpecialApostrophe, ""))
 
 ProcessKey(ih, char) {
     if (char = SpecialApostrophe or char = "'" or char = " " or char = "ù" or char = "à" or char = "è" or char = "é" or
@@ -103,10 +106,10 @@ KeyCheck(key) {
     if (H[1] == " " and key == SpecialApostrophe) {
         savedClip := ClipboardAll()
         A_Clipboard := ""
-        SendInput("+{Left 2}^c")
+        SendEvent("+{Left 2}^c")
         if ClipWait(0.1) {
             text := A_Clipboard
-            SendInput("{Right}")
+            SendEvent("{Right}")
             if (StrLen(text) >= 1) {
                 prevChar := SubStr(text, 1, 1)
                 if (IsAlpha(prevChar)) {
@@ -423,7 +426,7 @@ KeyCheck(key) {
 
     if (NewKey != " ") {
         if (H[1] = SpecialApostrophe or H[1] = "'") {
-            SendInput("{Backspace}")
+            SendEvent("{Backspace}")
             H.RemoveAt(1)
             H.Push(" ")
         }
@@ -432,7 +435,23 @@ KeyCheck(key) {
         if (StrLen(NewKey) > 1)
             ShiftHistory(SubStr(NewKey, 2, 1))
 
-        SendInput("{Backspace 2}" . NewKey)
+        if (NewKey = "à")
+            NewKey := "{Asc 133}"
+        else if (NewKey = "è")
+            NewKey := "{Asc 138}"
+        else if (NewKey = "é")
+            NewKey := "{Asc 130}"
+        else if (NewKey = "ì")
+            NewKey := "{Asc 141}"
+        else if (NewKey = "ò")
+            NewKey := "{Asc 149}"
+        else if (NewKey = "ó")
+            NewKey := "{Asc 162}"
+        else if (NewKey = "ù")
+            NewKey := "{Asc 151}"
+
+        SendEvent("{Backspace 2}" . NewKey
+    )
     } else {
         ShiftHistory(key)
     }
@@ -464,12 +483,46 @@ BackShiftHistory() {
     H.Push(" ")
 }
 
-#Include AutoAccenti_shortcuts.ahk
+; Abbreviazioni (Hotstrings)
+::(c)::©
+::(r)::®
+::+/-::±
+::n_o::n°
 
-SendSpecialChar(char) {
-    SendText(char)
+
+; Tasti Scelta Rapida per caratteri speciali (Right Alt / AltGr)
+#HotIf GermanKeyboard
+>!a::SendSpecialChar("ä", "{Asc 132}")
+>!o::SendSpecialChar("ö", "{Asc 148}")
+>!u::SendSpecialChar("ü", "{Asc 129}")
+>!s::SendSpecialChar("ß", "{Asc 225}")
++>!a::SendSpecialChar("Ä", "{Asc 142}")
++>!o::SendSpecialChar("Ö", "{Asc 153}")
++>!u::SendSpecialChar("Ü", "{Asc 154}")
+#HotIf
+
+
+SendSpecialChar(char, code) {
+    ; Recupera il titolo della finestra attualmente attiva
+    ActiveTitle := WinGetTitle("A")
+
+    ; Controlla se il titolo inizia con "Chrome Remote Desktop"
+    if SubStr(ActiveTitle, 1, 21) = "Chrome Remote Desktop"
+    || SubStr(ActiveTitle, 1, 28) = "mRemoteNG Connection Manager"
+    || SubStr(ActiveTitle, -25) = "Remote Desktop Connection"
+    {
+        ; --- COMPORTAMENTO DA REMOTO ---
+        ; Rilascia logicamente il tasto Alt prima dell'invio ASCII per evitare conflitti
+        Send "{AltUp}"
+        SendEvent(code)
+    } else {
+        SendEvent(char)
+    }
+
     ShiftHistory(char)
 }
+
+
 
 ; Inversione tasti Win e Alt per tastiere Apple (parametro 'apple')
 #HotIf AppleKeyboard
