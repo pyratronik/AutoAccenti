@@ -19,6 +19,7 @@ if FileExist("AutoAccenti.ico")
 ; 2026-08-22 SendEvent() instead of SendInput() and send Asc code to avoid issues with some applications
 ; 2026-08-22 SendSpecialChar() function to handle special characters and remote desktop scenarios
 ; 2026-08-25 Fixed the issue with German characters not working in remote desktop
+; 2026-08-29 Added the € key with the shortcut Alt + e
 
 ; Costanti globali
 global NotaMonosillabi :=
@@ -490,6 +491,10 @@ BackShiftHistory() {
 ::n_o::n°
 
 ; Tasti Scelta Rapida per caratteri speciali (Right Alt / AltGr)
+; Tasti italiani non mappati sulla tastiera US
+>!e:: SendSpecialChar("€", "{Asc 128}")
+
+; Tasti tedeschi non mappati sulla tastiera US
 #HotIf GermanKeyboard
 >!a:: SendSpecialChar("ä", "{Asc 132}")
 >!o:: SendSpecialChar("ö", "{Asc 148}")
