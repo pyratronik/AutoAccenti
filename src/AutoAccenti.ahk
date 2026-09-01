@@ -20,6 +20,7 @@ if FileExist("AutoAccenti.ico")
 ; 2026-08-22 SendSpecialChar() function to handle special characters and remote desktop scenarios
 ; 2026-08-25 Fixed the issue with German characters not working in remote desktop
 ; 2026-08-29 Added the € key with the shortcut Alt + e
+; 2026-09-01 Fix Euro symbol code on remote desktop (was 128, now 0128)
 
 ; Costanti globali
 global NotaMonosillabi :=
@@ -492,7 +493,7 @@ BackShiftHistory() {
 
 ; Tasti Scelta Rapida per caratteri speciali (Right Alt / AltGr)
 ; Tasti italiani non mappati sulla tastiera US
->!e:: SendSpecialChar("€", "{Asc 128}")
+>!e:: SendSpecialChar("€", "{Asc 0128}")
 
 ; Tasti tedeschi non mappati sulla tastiera US
 #HotIf GermanKeyboard
