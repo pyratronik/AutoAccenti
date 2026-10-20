@@ -21,6 +21,7 @@ if FileExist("AutoAccenti.ico")
 ; 2026-08-25 Fixed the issue with German characters not working in remote desktop
 ; 2026-08-29 Added the € key with the shortcut Alt + e
 ; 2026-09-01 Fix Euro symbol code on remote desktop (was 128, now 0128)
+; 2026-10-18 Fix: use {Text} (Unicode) for local apps (Notepad Win11, Search) to avoid Alt-Numpad glitches (☺) and keep {Asc} only for Remote Desktop
 
 ; Costanti globali
 global NotaMonosillabi :=
@@ -45,7 +46,7 @@ for arg in A_Args {
 global H := [" ", " ", " ", " ", " ", " ", " ", " ", " "]
 
 ; Diagnostica avvio
-ToolTip("AutoAccenti v2 2026-08-24 Avviato!")
+ToolTip("AutoAccenti v2 2026-10-18 Avviato!")
 SetTimer () => ToolTip(), -4000
 
 ; Inizializzazione InputHook
@@ -437,23 +438,38 @@ KeyCheck(key) {
         if (StrLen(NewKey) > 1)
             ShiftHistory(SubStr(NewKey, 2, 1))
 
-        if (NewKey = "à")
-            NewKey := "{Asc 133}"
-        else if (NewKey = "è")
-            NewKey := "{Asc 138}"
-        else if (NewKey = "é")
-            NewKey := "{Asc 130}"
-        else if (NewKey = "ì")
-            NewKey := "{Asc 141}"
-        else if (NewKey = "ò")
-            NewKey := "{Asc 149}"
-        else if (NewKey = "ó")
-            NewKey := "{Asc 162}"
-        else if (NewKey = "ù")
-            NewKey := "{Asc 151}"
+        ; In ambienti Desktop Remoto (mRemoteNG, RDP, Chrome Remote Desktop),
+        ; l'input Unicode può essere limitato e i codici {Asc} con {AltUp} preventivo
+        ; garantiscono il recapito del tasto.
+        ; Nelle normali applicazioni locali (Notepad Win11, Windows Search, browser, Office, ecc.)
+        ; l'uso di {Asc} causava l'interpretazione errata di Alt+Numpad con stampa di '☺' o caratteri nulli.
+        ; La modalità {Text} di AutoHotkey invia caratteri Unicode nativi (KEYEVENTF_UNICODE),
+        ; universale, immune al layout di tastiera e alle codepage OEM.
+        if (IsRemoteDesktop()) {
+            remoteAsc := ""
+            if (NewKey = "à")
+                remoteAsc := "{Asc 133}"
+            else if (NewKey = "è")
+                remoteAsc := "{Asc 138}"
+            else if (NewKey = "é")
+                remoteAsc := "{Asc 130}"
+            else if (NewKey = "ì")
+                remoteAsc := "{Asc 141}"
+            else if (NewKey = "ò")
+                remoteAsc := "{Asc 149}"
+            else if (NewKey = "ó")
+                remoteAsc := "{Asc 162}"
+            else if (NewKey = "ù")
+                remoteAsc := "{Asc 151}"
 
-        SendEvent("{Backspace 2}" . NewKey
-        )
+            if (remoteAsc != "") {
+                Send "{AltUp}"
+                SendEvent("{Backspace 2}" . remoteAsc)
+                return
+            }
+        }
+
+        SendEvent("{Backspace 2}{Text}" . NewKey)
     } else {
         ShiftHistory(key)
     }
@@ -506,20 +522,27 @@ BackShiftHistory() {
 +>!u:: SendSpecialChar("Ü", "{Asc 154}")
 #HotIf
 
-SendSpecialChar(char, code) {
-    ; Recupera il titolo della finestra attualmente attiva
-    ActiveTitle := WinGetTitle("A")
+IsRemoteDesktop() {
+    try {
+        ActiveTitle := WinGetTitle("A")
+        return (SubStr(ActiveTitle, 1, 21) = "Chrome Remote Desktop"
+        || SubStr(ActiveTitle, 1, 28) = "mRemoteNG Connection Manager"
+        || SubStr(ActiveTitle, -25) = "Remote Desktop Connection"
+        || WinActive("ahk_class TSSHELLWND")
+        || WinActive("ahk_class TscShellContainerClass"))
+    }
+    return false
+}
 
-    ; Controlla se il titolo inizia con "Chrome Remote Desktop"
-    if SubStr(ActiveTitle, 1, 21) = "Chrome Remote Desktop"
-    || SubStr(ActiveTitle, 1, 28) = "mRemoteNG Connection Manager"
-    || SubStr(ActiveTitle, -25) = "Remote Desktop Connection" {
+SendSpecialChar(char, code) {
+    if (IsRemoteDesktop() and code != "") {
         ; --- COMPORTAMENTO DA REMOTO ---
         ; Rilascia logicamente il tasto Alt prima dell'invio ASCII per evitare conflitti
         Send "{AltUp}"
         SendEvent(code)
     } else {
-        SendEvent(char)
+        ; --- COMPORTAMENTO LOCALE (Universale via Unicode Text) ---
+        SendEvent("{Text}" . char)
     }
 
     ShiftHistory(char)
